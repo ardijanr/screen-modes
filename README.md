@@ -26,7 +26,7 @@ Open a window that lets you click on what screen you want active and immediately
          -- extend (highest available)
          -- duplicate (lowest common resolution)
          -- screen position left or right
-         -- Only Secondairy
+         -- Only Secondary
          -- Only Primary
 
 
