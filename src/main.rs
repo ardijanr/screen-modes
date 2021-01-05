@@ -31,12 +31,9 @@ fn check_active_monitors() -> Vec<Monitor>{
         let mut screen_enabled = false;
 
         if words.next() == Some("connected") {
-            // println!("Screen {:?} is connected", name);
 
-            let mut resolution = lines.next().unwrap().split_whitespace();
-            resolution.next();
-
-            if resolution.next().unwrap().contains(&"*"){
+            //checks entire line...
+            if lines.next().unwrap().contains(&"*"){
                 screen_enabled = true;
             };
 
