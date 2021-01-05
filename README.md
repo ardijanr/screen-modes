@@ -11,6 +11,7 @@ Makes changing monitor layout simpler.
 Depends on:
 
 xrandr
+
 X11
 
 
@@ -18,7 +19,7 @@ Open a window that lets you click on what screen you want active and immediately
 
 
 
-1. Detect connected screens,
+1. Detect connected screens
      -- add them to a monitor struct
 
 2. Make a window popup
@@ -30,5 +31,7 @@ Open a window that lets you click on what screen you want active and immediately
          -- Only Primary
 
 
-         Future feature screen positioning
+Future features
+
+    screen positioning
 
