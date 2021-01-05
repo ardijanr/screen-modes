@@ -1,4 +1,6 @@
 use std::process::Command;
+use iced::{Column, Element, Length, Sandbox, Settings, Svg, button, Align, Button, Text};
+
 // use std::clone::Clone;
 // use std::string::String;
 // use std::fmt
@@ -6,14 +8,10 @@ use std::process::Command;
 // Create array that is centered
 
 struct Monitor {
-    // id:u32,
     name: String,
-    // res_high: String,
-    // res_other: Vec<String>,
     enabled: bool,
-    // freq: u32,
-
 }
+
 
 
 fn check_active_monitors() -> Vec<Monitor>{
@@ -48,10 +46,88 @@ fn check_active_monitors() -> Vec<Monitor>{
 }
 
 
-fn main() {
+fn main() -> iced::Result{
     let monitor = check_active_monitors();
     for i in monitor{
-        println!("Screen name {:?}, enabled {:?}",i.name, i.enabled )
-    }
+        println!("Screen name {:?}, enabled {:?}",i.name, i.enabled );
+    };
+
+
+    ScreenMode::run(Settings::default())
 
 }
+
+#[derive(Default)]
+struct ScreenMode{
+    image_1: button::State,
+    image_2: button::State,
+    image_3: button::State,
+    image_4: button::State,
+
+}
+
+
+
+#[derive(Debug, Clone, Copy)]
+enum Message {
+    Click1,
+    Click2,
+    Click3,
+    Click4,
+}
+
+
+impl Sandbox for ScreenMode{
+
+    type Message = Message;
+
+    fn new() -> Self{
+        Self::default()
+    }
+
+    fn title(&self) -> String {
+        String::from("Screen mode Selector")
+    }
+
+    fn update(&mut self, message: Message) {
+        match message {
+            Message::Click1 => { println!("YOU CLICKED SCREEN 1") }
+            Message::Click2 => { println!("YOU CLICKED SCREEN 2") }
+            Message::Click3 => { println!("YOU CLICKED SCREEN 3") }
+            Message::Click4 => { println!("YOU CLICKED SCREEN 4") }
+        }
+    }
+
+    fn view(&mut self) -> Element<Message>{
+
+        let path_prim:String=format!("/home/ardijan/downloads/repos/screen-Toggle/primary-only.svg");
+        let path_seco:String=format!("/home/ardijan/downloads/repos/screen-Toggle/secondairy-only.svg");
+        let path_dup:String=format!("/home/ardijan/downloads/repos/screen-Toggle/duplicate.svg");
+        let path_ext:String=format!("/home/ardijan/downloads/repos/screen-Toggle/extended.svg");
+
+
+        Column::new()
+        .padding(20)
+        .align_items(Align::Center)
+        .push(
+            Button::new(&mut self.image_1, Svg::from_path(path_prim))
+            .on_press(Message::Click1),
+        )
+        .push(
+            Button::new(&mut self.image_2, Svg::from_path(path_seco))
+            .on_press(Message::Click2),
+        )
+        .push(
+            Button::new(&mut self.image_3, Svg::from_path(path_dup))
+            .on_press(Message::Click3),
+        )
+        .push(
+            Button::new(&mut self.image_4, Svg::from_path(path_ext))
+            .on_press(Message::Click4),
+        )
+        .into()
+
+    }
+}
+
+
