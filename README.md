@@ -15,7 +15,19 @@ xrandr
 X11
 
 
-Open a window that lets you click on what screen you want active and immediately closes after click/enter
+Opens a window that lets you click on what screen you want active and immediately closes after click/enter
+
+
+
+
+TODO:
+- Fix Floating on tiling window manager
+- Fix close after click
+
+- Fix select with keyboard arrows/vim
+- Fix darker background color
+
+
 
 
 
@@ -54,7 +66,7 @@ xrandr --output PRIMARY --mode COMMON-RESOLUTION --off --output SECONDAIRY --mod
 
 
 Extend:
-xrandr --ouput PRIMARY --off --output SECONDAIRY --auto --left-of PRIMARY
+xrandr --ouput PRIMARY --auto --output SECONDAIRY --auto --left-of PRIMARY
 
 
 
