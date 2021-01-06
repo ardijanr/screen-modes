@@ -1,15 +1,11 @@
 use std::process::Command;
 use iced::{Column, Element, Length, Sandbox, Settings, Svg, button, Align, Button, Text};
 
-// use std::clone::Clone;
-// use std::string::String;
-// use std::fmt
-
-// Create array that is centered
-
 struct Monitor {
     name: String,
     enabled: bool,
+    resolutions: Vec<String>,
+    primary: bool
 }
 
 
@@ -27,17 +23,42 @@ fn check_active_monitors() -> Vec<Monitor>{
         let mut words = i.split_whitespace();
         let name = words.next();
         let mut screen_enabled = false;
+        let mut primary = false;
 
         if words.next() == Some("connected") {
+            if words.next() == Some("primary"){
+                primary = true;
+            }
 
-            //checks entire line...
-            if lines.next().unwrap().contains(&"*"){
+            //if the moitor is connected and contains * we need to save that variable
+            let mut resolutions_vec:Vec<String>  = Vec::new();
+            let mut first_res_line = lines.next().unwrap().split_whitespace();
+            resolutions_vec.push( String::from(first_res_line.next().unwrap()) );
+
+            //checks the entire line
+            if first_res_line.next().unwrap().contains(&"*"){
                 screen_enabled = true;
             };
+
+
+            while let Some(resolution_line) = lines.next(){
+                let resolution = resolution_line.split_whitespace().next().unwrap();
+
+                let left_side = String::from( resolution.split("x").next().unwrap() );
+                // println!("{}",left_side);
+                if left_side.parse::<i32>().unwrap() > 1000{
+                    resolutions_vec.push( String::from(resolution) )
+                } else {
+                    break
+                }
+            }
+
 
             monitor_vec.push(Monitor{
                 name: String::from(name.unwrap()),
                 enabled: screen_enabled,
+                resolutions: resolutions_vec,
+                primary: primary,
             })
         }
     }
@@ -45,16 +66,73 @@ fn check_active_monitors() -> Vec<Monitor>{
     return monitor_vec;
 }
 
+fn find_common_res(primary:Vec<String>,secondary:Vec<String>) -> (usize, usize){
 
-fn main() -> iced::Result{
-    let monitor = check_active_monitors();
-    for i in monitor{
-        println!("Screen name {:?}, enabled {:?}",i.name, i.enabled );
+    for i in 0..primary.len(){
+        for j in 0..secondary.len(){
+            if primary[i]==secondary[j]{
+                return (i,j);
+            }
+        }
+    }
+
+    return (0,0);
+}
+
+//Currently only works with one external monitor.
+pub fn set_mode(message: Message){
+
+    let mut active_monitors = check_active_monitors();
+    let mut primary_index = 0;
+
+    for i in 0..active_monitors.len() {
+        if active_monitors[i].primary == true{
+            primary_index = i
+        };
     };
 
+    //primary monitor is not the currently active one, its what is set as primary in xrandr
+    let primary_monitor = active_monitors.remove(primary_index);
 
+    match message {
+        Message::ModePrim => { Command::new("xrandr").args(
+                &["--output",&(primary_monitor.name) ,"--auto","--output", &(active_monitors[0].name),"--off"]
+            ).output().expect("some error");
+        }
+
+        Message::ModeSec => { Command::new("xrandr").args(
+            &["--output",&(primary_monitor.name) ,"--off","--output", &(active_monitors[0].name),"--auto"]
+        ).output().expect("some error");
+        }
+
+        Message::ModeDup => {
+            let common_res = find_common_res(primary_monitor.resolutions.clone(),active_monitors[0].resolutions.clone());
+
+            Command::new("xrandr").args(
+                &["--output",&(primary_monitor.name) ,"--mode",&(primary_monitor.resolutions[common_res.0]),"--output", &(active_monitors[0].name),"--mode",&(active_monitors[0].resolutions[common_res.1]),"--same-as",&(primary_monitor.name) ]
+            ).output().expect("some error");
+            }
+
+        Message::ModeExt => { Command::new("xrandr").args(
+            &[ "--output",&(primary_monitor.name) ,"--auto","--output", &(active_monitors[0].name),"--auto", "--left-of",&(primary_monitor.name) ]
+        ).output().expect("some error");
+        }
+    }
+
+}
+
+// THIS MAIN IS FOR TESTING
+// fn main() {
+//     let a = [0];
+//     let monitor = check_active_monitors();
+//     for i in monitor{
+//         println!("Screen name {:?}, enabled {:?} , primary {:?}, supported resolutions: {:?}",i.name, i.enabled, i.primary,i.resolutions);
+//     };
+// }
+
+fn main() -> iced::Result{
+    // check_active_monitors();
     ScreenMode::run(Settings::default())
-
 }
 
 #[derive(Default)]
@@ -69,11 +147,11 @@ struct ScreenMode{
 
 
 #[derive(Debug, Clone, Copy)]
-enum Message {
-    Click1,
-    Click2,
-    Click3,
-    Click4,
+pub enum Message {
+    ModePrim,
+    ModeSec,
+    ModeDup,
+    ModeExt,
 }
 
 
@@ -90,12 +168,7 @@ impl Sandbox for ScreenMode{
     }
 
     fn update(&mut self, message: Message) {
-        match message {
-            Message::Click1 => { println!("YOU CLICKED SCREEN 1") }
-            Message::Click2 => { println!("YOU CLICKED SCREEN 2") }
-            Message::Click3 => { println!("YOU CLICKED SCREEN 3") }
-            Message::Click4 => { println!("YOU CLICKED SCREEN 4") }
-        }
+        set_mode(message)
     }
 
     fn view(&mut self) -> Element<Message>{
@@ -111,23 +184,21 @@ impl Sandbox for ScreenMode{
         .align_items(Align::Center)
         .push(
             Button::new(&mut self.image_1, Svg::from_path(path_prim))
-            .on_press(Message::Click1),
+            .on_press(Message::ModePrim),
         )
         .push(
             Button::new(&mut self.image_2, Svg::from_path(path_seco))
-            .on_press(Message::Click2),
+            .on_press(Message::ModeSec),
         )
         .push(
             Button::new(&mut self.image_3, Svg::from_path(path_dup))
-            .on_press(Message::Click3),
+            .on_press(Message::ModeDup),
         )
         .push(
             Button::new(&mut self.image_4, Svg::from_path(path_ext))
-            .on_press(Message::Click4),
+            .on_press(Message::ModeExt),
         )
         .into()
-
     }
 }
-
 
