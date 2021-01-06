@@ -12,10 +12,12 @@ Bind it to a key for optimal handyness.
 ![](readme_assets/2021-01-06_03-15.png)
 ### Standalone application
 
-Depends on:
+Source code depends on:
+- [packer](https://github.com/iptq/packer)
 - [iced](https://github.com/hecrj/iced)
-- xrandr
 
+
+Requires xrandr.
 
 
 Opens a floating window that lets you click on what screen you want active and immediately closes after click/enter,
