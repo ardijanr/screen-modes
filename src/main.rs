@@ -1,5 +1,7 @@
 use std::process::Command;
 use iced::{Column, Element, Length, Sandbox, Settings, Svg, button, Align, Button, Text};
+use std::env;
+
 
 struct Monitor {
     name: String,
@@ -123,6 +125,7 @@ pub fn set_mode(message: Message){
 
 // THIS MAIN IS FOR TESTING
 // fn main() {
+
 //     let a = [0];
 //     let monitor = check_active_monitors();
 //     for i in monitor{
@@ -173,11 +176,13 @@ impl Sandbox for ScreenMode{
 
     fn view(&mut self) -> Element<Message>{
 
-        let path_prim:String=format!("/home/ardijan/downloads/repos/screen-Toggle/primary-only.svg");
-        let path_seco:String=format!("/home/ardijan/downloads/repos/screen-Toggle/secondairy-only.svg");
-        let path_dup:String=format!("/home/ardijan/downloads/repos/screen-Toggle/duplicate.svg");
-        let path_ext:String=format!("/home/ardijan/downloads/repos/screen-Toggle/extended.svg");
+        let current_dir:String= env::current_dir().unwrap().as_os_str().to_str().unwrap().to_string();
+        let path_prim:String=format!("{}/assets/primary-only.svg",current_dir);
+        let path_seco:String=format!("{}/assets/secondairy-only.svg",current_dir);
+        let path_dup:String=format!("{}/assets/duplicate.svg",current_dir);
+        let path_ext:String=format!("{}/assets/extended.svg",current_dir);
 
+        println!("{}", path_prim);
 
         Column::new()
         .padding(20)
