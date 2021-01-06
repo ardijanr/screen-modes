@@ -1,4 +1,4 @@
-use iced::{button, Align, Button, Column, Element, Length, Sandbox, Settings, Svg};
+use iced::{button, Align, Button, Column, Element, Length, Sandbox, Settings, Svg, window};
 use core::panic;
 use std::env;
 use std::process::Command;
@@ -178,7 +178,15 @@ pub fn set_mode(message: Message) {
 
 fn main() -> iced::Result {
     // check_active_monitors();
-    ScreenMode::run(Settings::default())
+    let settings = Settings {
+            window: window::Settings {
+                max_size: Some((400,450)),
+                resizable: false,
+                ..window::Settings::default()
+            },
+            ..Default::default()
+        };
+    ScreenMode::run(settings)
 }
 
 #[derive(Default)]
@@ -205,7 +213,7 @@ impl Sandbox for ScreenMode {
     }
 
     fn title(&self) -> String {
-        String::from("Screen mode Selector")
+        String::from("Screen Mode Selector")
     }
 
     fn update(&mut self, message: Message) {
