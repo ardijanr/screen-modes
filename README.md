@@ -32,8 +32,9 @@ TODO:
 
 Fatures:
 
-- Only Secondary
+
 - Only Primary
+- Only Secondary
 - Duplicate (True duplicate, highest common resolution)
 - Extend (highest available)
 
