@@ -1,11 +1,11 @@
 use std::process::Command;
-use iced::{Column, Element, Length, Sandbox, Settings, Svg, button, Align, Button, Text};
+use iced::{Column, Element, Length, Sandbox, Settings, Svg, button, Align, Button};
 use std::env;
 
 
 struct Monitor {
     name: String,
-    enabled: bool,
+    // enabled: bool,
     resolutions: Vec<String>,
     primary: bool
 }
@@ -38,9 +38,9 @@ fn check_active_monitors() -> Vec<Monitor>{
             resolutions_vec.push( String::from(first_res_line.next().unwrap()) );
 
             //checks the entire line
-            if first_res_line.next().unwrap().contains(&"*"){
-                screen_enabled = true;
-            };
+            // if first_res_line.next().unwrap().contains(&"*"){
+            //     screen_enabled = true;
+            // };
 
 
             while let Some(resolution_line) = lines.next(){
@@ -58,7 +58,7 @@ fn check_active_monitors() -> Vec<Monitor>{
 
             monitor_vec.push(Monitor{
                 name: String::from(name.unwrap()),
-                enabled: screen_enabled,
+                // enabled: screen_enabled,
                 resolutions: resolutions_vec,
                 primary: primary,
             })
