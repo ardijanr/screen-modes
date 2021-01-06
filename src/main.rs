@@ -58,7 +58,20 @@ fn check_active_monitors() -> Vec<Monitor> {
             })
         }
     }
+    //Check if you don't have any other monitors connected, enable that one and quit.
+    if monitor_vec.len()==1{
+        Command::new("xrandr")
+                .args(&[
+                    "--output",
+                    &(monitor_vec[0].name),
+                    "--auto",
+                ])
+                .output()
+                .expect("some error");
 
+                //Temporary solution, will fix once iced supports closing the window
+                panic!();
+    }
     return monitor_vec;
 }
 
@@ -102,6 +115,7 @@ pub fn set_mode(message: Message) {
                 .output()
                 .expect("some error");
 
+                //Temporary solution, will fix once iced supports closing the window
                 panic!();
         }
 
@@ -118,6 +132,7 @@ pub fn set_mode(message: Message) {
                 .output()
                 .expect("some error");
 
+                //Temporary solution, will fix once iced supports closing the window
                 panic!();
         }
 
@@ -143,6 +158,7 @@ pub fn set_mode(message: Message) {
                 .output()
                 .expect("some error");
 
+                //Temporary solution, will fix once iced supports closing the window
                 panic!();
         }
 
@@ -161,6 +177,7 @@ pub fn set_mode(message: Message) {
                 .output()
                 .expect("some error");
 
+                //Temporary solution, will fix once iced supports closing the window
                 panic!();
         }
     }
@@ -177,6 +194,7 @@ pub fn set_mode(message: Message) {
 // }
 
 fn main() -> iced::Result {
+    check_active_monitors();
     let settings = Settings {
             window: window::Settings {
                 max_size: Some((400,450)),
@@ -266,16 +284,6 @@ impl Sandbox for ScreenMode {
     }
 }
 
-
-
-// pub fn button_style()->button::Style{
-//     button::Style {
-//         background: Some(Background::Color(Color::WHITE)),
-//         border_radius: 3.0,
-//         text_color: Color::WHITE,
-//         ..button::Style::default()
-//     }
-// }
 
 mod style {
     use iced::{button, container, Background, Color, Vector};
