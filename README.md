@@ -5,7 +5,7 @@ Easy toggle between modes.
 
 Makes changing monitor layout simpler.
 
-
+![](readme_assets/2021-01-06_03-15.png)
 ### Standalone application
 
 Depends on:
