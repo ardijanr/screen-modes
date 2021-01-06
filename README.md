@@ -30,20 +30,12 @@ TODO:
 
 
 
+Fatures:
 
-1. Detect connected screens
-     -- add them to a monitor struct
+- Only Secondary
+- Only Primary
+- Duplicate (True duplicate, highest common resolution)
+- Extend (highest available)
 
-2. Make a window popup
-     -- selection choices
-         -- extend (highest available)
-         -- duplicate (lowest common resolution)
-         -- screen position left or right
-         -- Only Secondary
-         -- Only Primary
-
-
-Future features
-
-- screen positioning
-
+Future:
+- Screen position left or right
