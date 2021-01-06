@@ -1,4 +1,4 @@
-use iced::{button, Align, Button, Column, Element, Length, Sandbox, Settings, Svg, window};
+use iced::{button, Align, Button, Column, Element, Background, Sandbox, Settings, Svg, window,Color, Container, Length,container};
 use core::panic;
 use std::env;
 use std::process::Command;
@@ -177,7 +177,6 @@ pub fn set_mode(message: Message) {
 // }
 
 fn main() -> iced::Result {
-    // check_active_monitors();
     let settings = Settings {
             window: window::Settings {
                 max_size: Some((400,450)),
@@ -220,6 +219,8 @@ impl Sandbox for ScreenMode {
         set_mode(message)
     }
 
+
+
     fn view(&mut self) -> Element<Message> {
         let current_dir: String = env::current_dir()
             .unwrap()
@@ -234,23 +235,83 @@ impl Sandbox for ScreenMode {
 
         println!("{}", path_prim);
 
-        Column::new()
+        let content = Column::new()
             .padding(20)
             .align_items(Align::Center)
             .push(
                 Button::new(&mut self.image_1, Svg::from_path(path_prim))
-                    .on_press(Message::ModePrim),
+                    .on_press(Message::ModePrim).style(style::Button::Primary),
             )
             .push(
                 Button::new(&mut self.image_2, Svg::from_path(path_seco))
-                    .on_press(Message::ModeSec),
+                    .on_press(Message::ModeSec).style(style::Button::Primary),
             )
             .push(
-                Button::new(&mut self.image_3, Svg::from_path(path_dup)).on_press(Message::ModeDup),
+                Button::new(&mut self.image_3, Svg::from_path(path_dup))
+                    .on_press(Message::ModeDup).style(style::Button::Primary),
             )
             .push(
-                Button::new(&mut self.image_4, Svg::from_path(path_ext)).on_press(Message::ModeExt),
-            )
+                Button::new(&mut self.image_4, Svg::from_path(path_ext))
+                    .on_press(Message::ModeExt).style(style::Button::Primary),
+            );
+
+
+        Container::new(content)
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .center_x()
+            .center_y()
+            .style(style::Container::BackgroundColor)
             .into()
+    }
+}
+
+
+
+// pub fn button_style()->button::Style{
+//     button::Style {
+//         background: Some(Background::Color(Color::WHITE)),
+//         border_radius: 3.0,
+//         text_color: Color::WHITE,
+//         ..button::Style::default()
+//     }
+// }
+
+mod style {
+    use iced::{button, container, Background, Color, Vector};
+
+    pub enum Button {
+        Primary,
+        Selected,
+    }
+
+    pub enum Container{
+        BackgroundColor,
+    }
+
+    impl container::StyleSheet for Container{
+        fn style(&self) -> container::Style {
+            container::Style {
+                background: Some(Background::Color(Color::from_rgb(30.0/255.0,36.0/255.0,41.0/255.0))), //30, 36, 41
+                ..container::Style::default()
+
+            }
+        }
+
+    }
+
+    impl button::StyleSheet for Button {
+        fn active(&self) -> button::Style {
+            button::Style {
+                background: Some(Background::Color(match self {
+                    Button::Primary => Color::from_rgb(30.0/255.0,36.0/255.0,41.0/255.0),//15, 87, 148
+                    Button::Selected => Color::from_rgb(15.0/255.0,87.0/255.0,148.0/255.0),
+                })),
+                border_radius: 12.0,
+                shadow_offset: Vector::new(0.0, 0.0),
+                text_color: Color::WHITE,
+                ..button::Style::default()
+            }
+        }
     }
 }
