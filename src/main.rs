@@ -1,8 +1,11 @@
-use iced::{button, Align, Button, Column, Element, Background, Sandbox, Settings, Svg, window,Color, Container, Length,container,svg};
 use core::panic;
-use std::env;
-use std::process::Command;
+use iced::{
+    button, svg, window, Align, Button, Color, Column, Container, Element, Length, Sandbox,
+    Settings, Svg,
+};
+// use std::env;
 use packer::Packer;
+use std::process::Command;
 
 struct Monitor {
     name: String,
@@ -60,18 +63,14 @@ fn check_active_monitors() -> Vec<Monitor> {
         }
     }
     //Check if you don't have any other monitors connected, enable that one and quit.
-    if monitor_vec.len()==1{
+    if monitor_vec.len() == 1 {
         Command::new("xrandr")
-                .args(&[
-                    "--output",
-                    &(monitor_vec[0].name),
-                    "--auto",
-                ])
-                .output()
-                .expect("some error");
+            .args(&["--output", &(monitor_vec[0].name), "--auto"])
+            .output()
+            .expect("some error");
 
-                //Temporary solution, will fix once iced supports closing the window
-                panic!();
+        //Temporary solution, will fix once iced supports closing the window
+        panic!();
     }
     return monitor_vec;
 }
@@ -116,8 +115,8 @@ pub fn set_mode(message: Message) {
                 .output()
                 .expect("some error");
 
-                //Temporary solution, will fix once iced supports closing the window
-                panic!();
+            //Temporary solution, will fix once iced supports closing the window
+            panic!();
         }
 
         Message::ModeSec => {
@@ -133,8 +132,8 @@ pub fn set_mode(message: Message) {
                 .output()
                 .expect("some error");
 
-                //Temporary solution, will fix once iced supports closing the window
-                panic!();
+            //Temporary solution, will fix once iced supports closing the window
+            panic!();
         }
 
         Message::ModeDup => {
@@ -159,12 +158,11 @@ pub fn set_mode(message: Message) {
                 .output()
                 .expect("some error");
 
-                //Temporary solution, will fix once iced supports closing the window
-                panic!();
+            //Temporary solution, will fix once iced supports closing the window
+            panic!();
         }
 
         Message::ModeExt => {
-
             Command::new("xrandr")
                 .args(&[
                     "--output",
@@ -179,8 +177,8 @@ pub fn set_mode(message: Message) {
                 .output()
                 .expect("some error");
 
-                //Temporary solution, will fix once iced supports closing the window
-                panic!("ONLY ONE MONITOR");
+            //Temporary solution, will fix once iced supports closing the window
+            panic!("ONLY ONE MONITOR");
         }
     }
 }
@@ -188,8 +186,7 @@ pub fn set_mode(message: Message) {
 #[packer(source = "assets")]
 struct Assets;
 
-
-fn svg_create_handle(file_name:&str) -> svg::Handle {
+fn svg_create_handle(file_name: &str) -> svg::Handle {
     let data: Option<&'static [u8]> = Assets::get(file_name);
 
     return svg::Handle::from_memory(data.unwrap());
@@ -212,13 +209,13 @@ fn main() -> iced::Result {
 
     check_active_monitors();
     let settings = Settings {
-            window: window::Settings {
-                max_size: Some((400,450)),
-                resizable: false,
-                ..window::Settings::default()
-            },
-            ..Default::default()
-        };
+        window: window::Settings {
+            max_size: Some((400, 450)),
+            resizable: false,
+            ..window::Settings::default()
+        },
+        ..Default::default()
+    };
     ScreenMode::run(settings)
 }
 
@@ -253,31 +250,55 @@ impl Sandbox for ScreenMode {
         set_mode(message)
     }
 
-
-
     fn view(&mut self) -> Element<Message> {
+        // let current_dir: String = env::current_dir()
+        //     .unwrap()
+        //     .as_os_str()
+        //     .to_str()
+        //     .unwrap()
+        //     .to_string();
+        // let path_prim: String = format!("{}/assets/primary-only.svg", current_dir); //probably causing issues
+        // let path_seco: String = format!("{}/assets/secondairy-only.svg", current_dir);
+        // let path_dup: String = format!("{}/assets/duplicate.svg", current_dir);
+        // let path_ext: String = format!("{}/assets/extended.svg", current_dir);
 
+        // println!("{}", path_prim);
 
         let content = Column::new()
             .padding(20)
             .align_items(Align::Center)
             .push(
-                Button::new(&mut self.image_1, Svg::new(svg_create_handle("assets/primary-only.svg")))
-                    .on_press(Message::ModePrim).style(style::Button::Primary),
+                Button::new(
+                    &mut self.image_1,
+                    Svg::new(svg_create_handle("assets/primary-only.svg")),
+                )
+                .on_press(Message::ModePrim)
+                .style(style::Button::Primary),
             )
             .push(
-                Button::new(&mut self.image_2, Svg::new(svg_create_handle("assets/secondairy-only.svg")))
-                    .on_press(Message::ModeSec).style(style::Button::Primary),
+                Button::new(
+                    &mut self.image_2,
+                    Svg::new(svg_create_handle("assets/secondairy-only.svg")),
+                )
+                .on_press(Message::ModeSec)
+                .style(style::Button::Primary),
             )
             .push(
-                Button::new(&mut self.image_3, Svg::new(svg_create_handle("assets/duplicate.svg")))
-                    .on_press(Message::ModeDup).style(style::Button::Primary),
+                Button::new(
+                    &mut self.image_3,
+                    Svg::new(svg_create_handle("assets/duplicate.svg")),
+                )
+                .on_press(Message::ModeDup)
+                .style(style::Button::Primary),
             )
             .push(
-                Button::new(&mut self.image_4, Svg::new(svg_create_handle("assets/extended.svg")))
-                    .on_press(Message::ModeExt).style(style::Button::Primary),
+                Button::new(
+                    &mut self.image_4,
+                    Svg::new(svg_create_handle("assets/extended.svg")),
+                )
+                .on_press(Message::ModeExt)
+                .style(style::Button::Primary),
             );
-
 
         Container::new(content)
             .width(Length::Fill)
@@ -289,7 +310,6 @@ impl Sandbox for ScreenMode {
     }
 }
 
-
 mod style {
     use iced::{button, container, Background, Color, Vector};
 
@@ -298,27 +318,29 @@ mod style {
         Selected,
     }
 
-    pub enum Container{
+    pub enum Container {
         BackgroundColor,
     }
 
-    impl container::StyleSheet for Container{
+    impl container::StyleSheet for Container {
         fn style(&self) -> container::Style {
             container::Style {
-                background: Some(Background::Color(Color::from_rgb(30.0/255.0,36.0/255.0,41.0/255.0))), //30, 36, 41
+                background: Some(Background::Color(Color::from_rgb(
+                    30.0 / 255.0,
+                    36.0 / 255.0,
+                    41.0 / 255.0,
+                ))), //30, 36, 41
                 ..container::Style::default()
-
             }
         }
-
     }
 
     impl button::StyleSheet for Button {
         fn active(&self) -> button::Style {
             button::Style {
                 background: Some(Background::Color(match self {
-                    Button::Primary => Color::from_rgb(30.0/255.0,36.0/255.0,41.0/255.0),//15, 87, 148
-                    Button::Selected => Color::from_rgb(15.0/255.0,87.0/255.0,148.0/255.0),
+                    Button::Primary => Color::from_rgb(30.0 / 255.0, 36.0 / 255.0, 41.0 / 255.0), //15, 87, 148
+                    Button::Selected => Color::from_rgb(15.0 / 255.0, 87.0 / 255.0, 148.0 / 255.0),
                 })),
                 border_radius: 12.0,
                 shadow_offset: Vector::new(0.0, 0.0),
