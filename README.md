@@ -13,12 +13,13 @@ Bind it to a key for optimal handyness.
 ### Standalone application
 
 Depends on:
+- [iced](https://github.com/hecrj/iced)
+- xrandr
 
-xrandr
 
 
-
-Opens a floating window that lets you click on what screen you want active and immediately closes after click/enter
+Opens a floating window that lets you click on what screen you want active and immediately closes after click/enter,
+built entierly in rust, using the [iced GUI library](https://github.com/hecrj/iced).
 
 
 
