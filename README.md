@@ -25,8 +25,8 @@ Opens a floating window that lets you click on what screen you want active and i
 
 TODO:
 - Event when no external monitor is connected, enable the connected monitor, and close.
-    Comes in handy when primary is disabled after after disconnecting while in external monitor only mode.
-    xrandr does not automatically switch, so having this would be nice.
+    Comes in handy when primary is disabled after after disconnecting while in "external monitor only" mode.
+    xrandr does not automatically switch back to the connected display, so having this would be nice.
 
 - Fix select with keyboard arrows/vim
 - Nicer icons
