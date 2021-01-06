@@ -24,7 +24,7 @@ fn check_active_monitors() -> Vec<Monitor>{
 
         let mut words = i.split_whitespace();
         let name = words.next();
-        let mut screen_enabled = false;
+        // let mut screen_enabled = false;
         let mut primary = false;
 
         if words.next() == Some("connected") {
