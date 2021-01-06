@@ -45,33 +45,5 @@ TODO:
 
 Future features
 
-    screen positioning
-
-
-
-Implementation Spesifics for set_mode() function
-
-Only primary display...
-Command:
-xrandr --output PRIMARY --auto --output SECONDAIRY --off
-
-Only Secondairy
-Command:
-xrandr --output PRIMARY --off --output SECONDAIRY --auto
-
-
-Duplicate: (True duplication, meaning same resolution on both)
-
-xrandr --output PRIMARY --mode COMMON-RESOLUTION --off --output SECONDAIRY --mode COMMON-RESOLUTION --same-as PRIMARY
-
-
-Extend:
-xrandr --ouput PRIMARY --auto --output SECONDAIRY --auto --left-of PRIMARY
-
-
-
-
-Notes:
-
-Generate arguments, then pass each one to command
+- screen positioning
 
