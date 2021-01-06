@@ -1,4 +1,4 @@
-# Screen-Mode-Selector
+# Screen Mode Selector
 
 Easy toggle between modes for two monitors.
 
