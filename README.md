@@ -42,11 +42,9 @@ Future Features:
 - Screen position left or right
 
 
-#Installation 
+# Installation/How to use
 
 Compile or download binary and place it in for example ~/.bin (create if necessary)
-
-
 
 
 Example for keyboard shortcut binding in i3:
