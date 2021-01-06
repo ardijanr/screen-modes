@@ -33,13 +33,15 @@ TODO:
 
 Features:
 
-- Only Primary
-- Only Secondary
-- True duplicate, highest common resolution)
+- Display only on Primary monitor
+- Display only on Secondary monitor
+- Duplicate screens, (actual duplicate, highest common resolution)
 - Extend (highest available on both monitors)
 
 Future Features:
-- Screen position left or right
+- Screen position left or right (defaults to left right now)
+    For now either change the source code argument where it says "--left-off" to "--right-of" in the main.rs file and recompile.
+    or complain about it and it might happen sooner...
 
 
 # Installation/How to use
@@ -52,4 +54,3 @@ Example for keyboard shortcut binding in i3:
 ```
 bindsym --release $mod+F2 exec --no-startup-id ~/.bin/screen_toggle
 ```
-
