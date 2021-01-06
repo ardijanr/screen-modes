@@ -13,8 +13,8 @@ Bind it to a key for optimal handyness.
 ### Standalone application
 
 Depends on:
-[iced](https://github.com/hecrj/iced)
-xrandr
+- [iced](https://github.com/hecrj/iced)
+- xrandr
 
 
 
