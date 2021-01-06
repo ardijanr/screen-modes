@@ -1,7 +1,8 @@
-use iced::{button, Align, Button, Column, Element, Background, Sandbox, Settings, Svg, window,Color, Container, Length,container};
+use iced::{button, Align, Button, Column, Element, Background, Sandbox, Settings, Svg, window,Color, Container, Length,container,svg};
 use core::panic;
 use std::env;
 use std::process::Command;
+use packer::Packer;
 
 struct Monitor {
     name: String,
@@ -163,6 +164,7 @@ pub fn set_mode(message: Message) {
         }
 
         Message::ModeExt => {
+
             Command::new("xrandr")
                 .args(&[
                     "--output",
@@ -178,9 +180,19 @@ pub fn set_mode(message: Message) {
                 .expect("some error");
 
                 //Temporary solution, will fix once iced supports closing the window
-                panic!();
+                panic!("ONLY ONE MONITOR");
         }
     }
+}
+#[derive(Packer)]
+#[packer(source = "assets")]
+struct Assets;
+
+
+fn svg_create_handle(file_name:&str) -> svg::Handle {
+    let data: Option<&'static [u8]> = Assets::get(file_name);
+
+    return svg::Handle::from_memory(data.unwrap());
 }
 
 // THIS MAIN IS FOR TESTING
@@ -194,6 +206,10 @@ pub fn set_mode(message: Message) {
 // }
 
 fn main() -> iced::Result {
+    // This is run to check if any monitors we only have one monitor connected,
+    // if so it will enable the connected monitor and immediately close
+    // println!("{:?}", Assets::list());
+
     check_active_monitors();
     let settings = Settings {
             window: window::Settings {
@@ -240,36 +256,25 @@ impl Sandbox for ScreenMode {
 
 
     fn view(&mut self) -> Element<Message> {
-        let current_dir: String = env::current_dir()
-            .unwrap()
-            .as_os_str()
-            .to_str()
-            .unwrap()
-            .to_string();
-        let path_prim: String = format!("{}/assets/primary-only.svg", current_dir);
-        let path_seco: String = format!("{}/assets/secondairy-only.svg", current_dir);
-        let path_dup: String = format!("{}/assets/duplicate.svg", current_dir);
-        let path_ext: String = format!("{}/assets/extended.svg", current_dir);
 
-        // println!("{}", path_prim);
 
         let content = Column::new()
             .padding(20)
             .align_items(Align::Center)
             .push(
-                Button::new(&mut self.image_1, Svg::from_path(path_prim))
+                Button::new(&mut self.image_1, Svg::new(svg_create_handle("assets/primary-only.svg")))
                     .on_press(Message::ModePrim).style(style::Button::Primary),
             )
             .push(
-                Button::new(&mut self.image_2, Svg::from_path(path_seco))
+                Button::new(&mut self.image_2, Svg::new(svg_create_handle("assets/secondairy-only.svg")))
                     .on_press(Message::ModeSec).style(style::Button::Primary),
             )
             .push(
-                Button::new(&mut self.image_3, Svg::from_path(path_dup))
+                Button::new(&mut self.image_3, Svg::new(svg_create_handle("assets/duplicate.svg")))
                     .on_press(Message::ModeDup).style(style::Button::Primary),
             )
             .push(
-                Button::new(&mut self.image_4, Svg::from_path(path_ext))
+                Button::new(&mut self.image_4, Svg::new(svg_create_handle("assets/extended.svg")))
                     .on_press(Message::ModeExt).style(style::Button::Primary),
             );
 
