@@ -25,10 +25,6 @@ built entierly in rust, using the [iced GUI library](https://github.com/hecrj/ic
 
 
 TODO:
-- Event when no external monitor is connected, enable the connected monitor, and close.
-    Comes in handy when primary is disabled after after disconnecting while in "external monitor only" mode.
-    xrandr does not automatically switch back to the connected display, so having this would be nice.
-
 - Fix select with keyboard arrows/vim
 - Nicer icons
 
@@ -44,3 +40,18 @@ Features:
 
 Future Features:
 - Screen position left or right
+
+
+#Installation 
+
+Compile or download binary and place it in for example ~/.bin (create if necessary)
+
+
+
+
+Example for keyboard shortcut binding in i3:
+
+```
+bindsym --release $mod+F2 exec --no-startup-id ~/.bin/screen_toggle
+```
+
