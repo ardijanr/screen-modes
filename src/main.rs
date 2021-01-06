@@ -251,7 +251,7 @@ impl Sandbox for ScreenMode {
         let path_dup: String = format!("{}/assets/duplicate.svg", current_dir);
         let path_ext: String = format!("{}/assets/extended.svg", current_dir);
 
-        println!("{}", path_prim);
+        // println!("{}", path_prim);
 
         let content = Column::new()
             .padding(20)
