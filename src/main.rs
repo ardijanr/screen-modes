@@ -2,9 +2,9 @@ use iced::{
     button, svg, window, Align, Button, Color, Column, Container, Element, Length, Sandbox,
     Settings, Svg,
 };
-// use std::env;
+use std::env;
 use packer::Packer;
-use std::process::Command;
+use std::{io::Bytes, process::Command, vec};
 
 struct Monitor {
     name: String,
@@ -187,7 +187,9 @@ struct Assets;
 
 fn svg_create_handle(file_name: &str) -> svg::Handle {
     let data: Option<&'static [u8]> = Assets::get(file_name);
-
+    if data==None{
+        return svg::Handle::from_memory(Vec::new())
+    }
     return svg::Handle::from_memory(data.unwrap());
 }
 
