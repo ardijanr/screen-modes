@@ -1,4 +1,3 @@
-use core::panic;
 use iced::{
     button, svg, window, Align, Button, Color, Column, Container, Element, Length, Sandbox,
     Settings, Svg,
@@ -70,7 +69,7 @@ fn check_active_monitors() -> Vec<Monitor> {
             .expect("some error");
 
         //Temporary solution, will fix once iced supports closing the window
-        panic!();
+        std::process::exit(0)
     }
     return monitor_vec;
 }
@@ -116,7 +115,7 @@ pub fn set_mode(message: Message) {
                 .expect("some error");
 
             //Temporary solution, will fix once iced supports closing the window
-            panic!();
+            std::process::exit(0)
         }
 
         Message::ModeSec => {
@@ -133,7 +132,7 @@ pub fn set_mode(message: Message) {
                 .expect("some error");
 
             //Temporary solution, will fix once iced supports closing the window
-            panic!();
+            std::process::exit(0)
         }
 
         Message::ModeDup => {
@@ -159,7 +158,7 @@ pub fn set_mode(message: Message) {
                 .expect("some error");
 
             //Temporary solution, will fix once iced supports closing the window
-            panic!();
+            std::process::exit(0)
         }
 
         Message::ModeExt => {
@@ -178,7 +177,7 @@ pub fn set_mode(message: Message) {
                 .expect("some error");
 
             //Temporary solution, will fix once iced supports closing the window
-            panic!("ONLY ONE MONITOR");
+            std::process::exit(0)
         }
     }
 }
