@@ -278,7 +278,7 @@ impl Sandbox for ScreenMode {
             .push(
                 Button::new(
                     &mut self.image_2,
-                    Svg::new(svg_create_handle("assets/secondairy-only.svg")),
+                    Svg::new(svg_create_handle("assets/secondary-only.svg")),
                 )
                 .on_press(Message::ModeSec)
                 .style(style::Button::Primary),

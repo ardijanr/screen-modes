@@ -1,5 +1,5 @@
 [package]
-name = "screen_toggle"
+name = "screen_mode"
 version = "0.1.0"
 authors = ["ardijanr <a.rexhaj@stud.uis.no>"]
 edition = "2018"
