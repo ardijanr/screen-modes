@@ -29,8 +29,6 @@ built entierly in rust, using the [iced GUI library](https://github.com/hecrj/ic
 TODO:
 - Fix select with keyboard arrows/vim
 
-- Fix using panic to close application, this is due to iced not implementing a way to close the window.
-    Will look for alternatives in the meantime.
 
 
 
