@@ -9,7 +9,7 @@ Comes in handy when you have to present something or just want to enable your di
 Bind it to a key for optimal handyness.
 
 
-![](readme_assets/2021-01-06_03-15.png)
+![](readme_assets/screenshot.png)
 ### Standalone application
 
 Source code depends on:
