@@ -24,10 +24,12 @@ Opens a floating window that lets you click on what screen you want active and i
 built entierly in rust, using the [iced GUI library](https://github.com/hecrj/iced).
 
 
+Keybindings are bound to numbers 1 to 4:
 
-
-TODO:
-- Fix select with keyboard arrows/vim
+1 - Primary Screen Only (eDP)
+2 - First Secondary screen only
+3 - Duplicate
+4 - Extend using --auto command
 
 
 

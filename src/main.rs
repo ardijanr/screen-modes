@@ -1,8 +1,12 @@
 use iced::application::{self};
-use iced::widget::{button, image, Column, Container};
+use iced::keyboard::KeyCode;
+use iced::widget::{button, image, pane_grid, Column, Container};
 use iced::window::Settings;
-use iced::{theme, Alignment, Color, Element, Length, Sandbox, Theme};
-use std::process::Command;
+use iced::{
+    event, executor, keyboard, subscription, theme, Alignment, Application, Color, Element, Event,
+    Length, Subscription, Theme,
+};
+use std::process::{exit, Command};
 
 struct Monitor {
     name: String,
@@ -84,7 +88,7 @@ fn check_active_monitors() -> Vec<Monitor> {
             monitor_vec.push(Monitor {
                 name: String::from(monitor_name.unwrap()),
                 resolutions: resolutions_vec,
-                primary: primary,
+                primary,
             })
         }
     }
@@ -95,13 +99,13 @@ fn check_active_monitors() -> Vec<Monitor> {
     //Check if you don't have any other monitors connected, enable that one and quit.
     if monitor_vec.len() == 1 {
         Command::new("xrandr")
-            .args(&["--output", &(monitor_vec[0].name), "--auto"])
+            .args(["--output", &(monitor_vec[0].name), "--auto"])
             .output()
             .expect("Could not run command");
 
         std::process::exit(0)
     }
-    return monitor_vec;
+    monitor_vec
 }
 
 //Resolution finder, starts checking from the primary displays highest resolution
@@ -116,7 +120,7 @@ fn find_common_res(primary: Vec<String>, secondary: Vec<String>) -> (usize, usiz
             }
         }
     }
-    return (0, 0);
+    (0, 0)
 }
 
 //Currently only works with one external monitor, and one primary monitor
@@ -126,7 +130,7 @@ pub fn set_mode(message: Message) {
 
     //Find the index of the primary display
     for i in 0..active_monitors.len() {
-        if active_monitors[i].primary == true {
+        if active_monitors[i].primary {
             primary_index = i
         };
     }
@@ -136,7 +140,7 @@ pub fn set_mode(message: Message) {
 
     //Match what button was pressed, run command and close
     match message {
-        Message::ModePrim => {
+        Message::PrimaryOnly => {
             Command::new("xrandr")
                 .args([
                     "--output",
@@ -152,7 +156,7 @@ pub fn set_mode(message: Message) {
             std::process::exit(0)
         }
 
-        Message::ModeSec => {
+        Message::SecondaryOnly => {
             Command::new("xrandr")
                 .args([
                     "--output",
@@ -168,7 +172,7 @@ pub fn set_mode(message: Message) {
             std::process::exit(0)
         }
 
-        Message::ModeDup => {
+        Message::Duplicate => {
             let common_res = find_common_res(
                 primary_monitor.resolutions.clone(),
                 active_monitors[0].resolutions.clone(),
@@ -194,7 +198,7 @@ pub fn set_mode(message: Message) {
         }
 
         //Set mode to extended, defaults to left because mine is on my left.
-        Message::ModeExt => {
+        Message::Extend => {
             Command::new("xrandr")
                 .args([
                     "--output",
@@ -235,6 +239,7 @@ fn main() -> iced::Result {
     };
     ScreenMode::run(settings)
 }
+
 struct ScreenMode {
     primary_only: image::Handle,
     secondary_only: image::Handle,
@@ -244,30 +249,39 @@ struct ScreenMode {
 
 #[derive(Debug, Clone, Copy)]
 pub enum Message {
-    ModePrim,
-    ModeSec,
-    ModeDup,
-    ModeExt,
+    PrimaryOnly,
+    SecondaryOnly,
+    Duplicate,
+    Extend,
 }
 
-impl Sandbox for ScreenMode {
+impl Application for ScreenMode {
     type Message = Message;
 
-    fn new() -> Self {
-        Self {
-            primary_only: image::Handle::from_memory(PRIMARY_ONLY),
-            secondary_only: image::Handle::from_memory(SECONDARY_ONLY),
-            duplicate: image::Handle::from_memory(DUPLICATE),
-            extended: image::Handle::from_memory(EXTENDED),
-        }
+    type Theme = Theme;
+    type Executor = executor::Default;
+    type Flags = ();
+    fn new(_flags: ()) -> (Self, iced::Command<Message>) {
+        let (_panes, _) = pane_grid::State::new(());
+
+        (
+            ScreenMode {
+                primary_only: image::Handle::from_memory(PRIMARY_ONLY),
+                secondary_only: image::Handle::from_memory(SECONDARY_ONLY),
+                duplicate: image::Handle::from_memory(DUPLICATE),
+                extended: image::Handle::from_memory(EXTENDED),
+            },
+            iced::Command::none(),
+        )
     }
 
     fn title(&self) -> String {
         String::from("Screen Mode Selector")
     }
 
-    fn update(&mut self, message: Self::Message) {
-        set_mode(message)
+    fn update(&mut self, message: Self::Message) -> iced::Command<Message> {
+        set_mode(message);
+        iced::Command::none()
     }
 
     fn view(&self) -> Element<Message> {
@@ -282,7 +296,7 @@ impl Sandbox for ScreenMode {
                         .width(Length::Fill)
                         .height(Length::Shrink),
                 )
-                .on_press(Message::ModePrim)
+                .on_press(Message::PrimaryOnly)
                 .style(theme::Button::Custom(Box::new(ButtonColor::Primary))),
             )
             .push(
@@ -291,7 +305,7 @@ impl Sandbox for ScreenMode {
                         .width(Length::Fill)
                         .height(Length::Shrink),
                 )
-                .on_press(Message::ModeSec)
+                .on_press(Message::SecondaryOnly)
                 .style(theme::Button::Custom(Box::new(ButtonColor::Primary))),
             )
             .push(
@@ -300,7 +314,7 @@ impl Sandbox for ScreenMode {
                         .width(Length::Fill)
                         .height(Length::Shrink),
                 )
-                .on_press(Message::ModeDup)
+                .on_press(Message::Duplicate)
                 .style(theme::Button::Custom(Box::new(ButtonColor::Primary))),
             )
             .push(
@@ -309,7 +323,7 @@ impl Sandbox for ScreenMode {
                         .width(Length::Fill)
                         .height(Length::Shrink),
                 )
-                .on_press(Message::ModeDup)
+                .on_press(Message::Duplicate)
                 .style(theme::Button::Custom(Box::new(ButtonColor::Primary))),
             );
 
@@ -320,6 +334,25 @@ impl Sandbox for ScreenMode {
             .center_x()
             .center_y()
             .into()
+    }
+
+    fn subscription(&self) -> Subscription<Message> {
+        subscription::events_with(|event, status| match (event, status) {
+            (
+                Event::Keyboard(keyboard::Event::KeyPressed { key_code, .. }),
+                event::Status::Ignored,
+            ) => match key_code {
+                KeyCode::Key1 => Some(Message::PrimaryOnly),
+                KeyCode::Key2 => Some(Message::SecondaryOnly),
+                KeyCode::Key3 => Some(Message::Duplicate),
+                KeyCode::Key4 => Some(Message::Extend),
+                // KeyCode::Escape => exit(0),
+                // KeyCode::Q => exit(0),
+                //Any other key will quit
+                _ => exit(0),
+            },
+            _ => None,
+        })
     }
 
     fn style(&self) -> theme::Application {
@@ -341,7 +374,7 @@ pub enum ButtonColor {
 }
 
 impl button::StyleSheet for ButtonColor {
-    fn active(&self, style: &Self::Style) -> iced::widget::button::Appearance {
+    fn active(&self, _style: &Self::Style) -> iced::widget::button::Appearance {
         iced::widget::button::Appearance {
             background: Some(iced::Background::Color(Color {
                 r: 0.,
