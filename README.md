@@ -23,17 +23,17 @@ Opens a floating window that lets you click on what screen you want active and i
 built entierly in rust, using the [iced GUI library](https://github.com/hecrj/iced).
 
 
-Keybindings are bound to numbers 1 to 4:
+# Keybindings
 
-1 - Primary Screen Only (eDP)
-2 - First Secondary screen only
-3 - Duplicate
-4 - Extend using --auto command
-q - Exit
-Esc - Exit
+- Key(  1  ) --  Primary Screen Only (eDP)
+- Key(  2  ) --  First Secondary screen only
+- Key(  3  ) --  Duplicate
+- Key(  4  ) --  Extend using --auto command
+- Key(  Q  ) --  Exit
+- Key(  Esc  ) --  Exit
 
 
-Features:
+# Features:
 
 - Display only on Primary monitor
 - Display only on Secondary monitor
@@ -58,7 +58,7 @@ bindsym --release $mod+F2 exec --no-startup-id ~/.bin/screen_toggle
 ```
 
 
-Example nixos install:
+# Example nixos install:
 ```
 
 { config, lib, pkgs, ... }:
