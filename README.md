@@ -48,7 +48,7 @@ Future Features:
 
 # Installation/How to use
 
-Compile or [download binary](https://github.com/ardijanr/screen-modes/releases/download/Beta/screen_mode) and place it in for example ~/.bin (create if necessary)
+Compile or [download binary](https://github.com/ardijanr/screen-modes/releases/download/Beta/screen_mode) and place it in for example ~/.local/bin (create if necessary)
 
 
 Example for keyboard shortcut binding in i3:
