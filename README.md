@@ -30,7 +30,7 @@ Keybindings are bound to numbers 1 to 4:
 3 - Duplicate
 4 - Extend using --auto command
 
-
+PS: Any other keyboard button, will close the application!
 
 
 Features:
@@ -55,4 +55,64 @@ Example for keyboard shortcut binding in i3:
 
 ```
 bindsym --release $mod+F2 exec --no-startup-id ~/.bin/screen_toggle
+```
+
+
+Example nixos install:
+```
+
+{ config, lib, pkgs, ... }:
+
+let
+  url = "https://github.com/ardijanr/screen-modes/releases/download/latest/screen_mode";
+  sha256 = "0qsljvnbqdwdrvhbkp9j4l1cdmnfyzirk39qb8rm635nlmx88i3m";
+
+  runtimeDeps = with pkgs; [
+    xorg.libX11
+    xorg.libXcursor
+    xorg.libXi
+    xorg.libXrandr
+  ];
+
+  screenMode = pkgs.stdenv.mkDerivation {
+    pname = "screen_mode";
+    version = "0.1.0";
+    src = pkgs.fetchurl {
+      url = url;
+      sha256 = sha256;
+    };
+
+    buildInputs = runtimeDeps;
+
+    dontUnpack = true;
+
+    installPhase = ''
+      mkdir -p $out/bin
+      cp $src $out/bin/screen_mode
+      chmod +x $out/bin/screen_mode
+    '';
+
+    makeWrapperArgs = [
+      "--set" "LD_LIBRARY_PATH" "${lib.makeLibraryPath runtimeDeps}"
+    ];
+
+    nativeBuildInputs = [ pkgs.makeWrapper ];
+
+    postFixup = ''
+      wrapProgram $out/bin/screen_mode ''${makeWrapperArgs[@]}
+    '';
+
+    meta = with lib; {
+      description = "Select how external monitors should behave";
+      homepage = "https://github.com/ardijanr/screen-modes";
+      license = licenses.mit;
+      maintainers = with maintainers; [ "ardijanr" ];
+    };
+  };
+in
+{
+  home.packages = [
+    screenMode
+  ];
+}
 ```
