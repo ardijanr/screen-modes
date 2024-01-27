@@ -346,10 +346,9 @@ impl Application for ScreenMode {
                 KeyCode::Key2 => Some(Message::SecondaryOnly),
                 KeyCode::Key3 => Some(Message::Duplicate),
                 KeyCode::Key4 => Some(Message::Extend),
-                // KeyCode::Escape => exit(0),
-                // KeyCode::Q => exit(0),
-                //Any other key will quit
-                _ => exit(0),
+                KeyCode::Escape => exit(0),
+                KeyCode::Q => exit(0),
+                _ => None,
             },
             _ => None,
         })

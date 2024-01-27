@@ -29,8 +29,8 @@ Keybindings are bound to numbers 1 to 4:
 2 - First Secondary screen only
 3 - Duplicate
 4 - Extend using --auto command
-
-PS: Any other keyboard button, will close the application!
+q - Exit
+Esc - Exit
 
 
 Features:
@@ -65,7 +65,7 @@ Example nixos install:
 
 let
   url = "https://github.com/ardijanr/screen-modes/releases/download/latest/screen_mode";
-  sha256 = "0qsljvnbqdwdrvhbkp9j4l1cdmnfyzirk39qb8rm635nlmx88i3m";
+  sha256 = "1wcngmhif8csv6iv9wh2w3gkrgh4f0gb0vkmkgxhfp89kdhb4jx1";
 
   runtimeDeps = with pkgs; [
     xorg.libX11
