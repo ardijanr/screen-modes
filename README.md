@@ -13,7 +13,6 @@ Bind it to a key for optimal handyness.
 ### Standalone application
 
 Source code depends on:
-- [packer](https://github.com/iptq/packer)
 - [iced](https://github.com/hecrj/iced)
 
 
