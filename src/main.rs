@@ -1,11 +1,8 @@
-use iced::{
-    button, svg, window, Align, Button, Color, Column, Container, Element, Length, Sandbox,
-    Settings, Svg,
-};
-use std::env;
-use packer::Packer;
-use std::{io::Bytes, process::Command, vec};
-
+use iced::application::{self};
+use iced::widget::{button, image, Column, Container};
+use iced::window::Settings;
+use iced::{theme, Alignment, Color, Element, Length, Sandbox, Theme};
+use std::process::Command;
 
 struct Monitor {
     name: String,
@@ -14,14 +11,15 @@ struct Monitor {
     primary: bool,
 }
 
-
 //
 // ─── XRANDR OUTPUT PARSER START ────────────────────────────────────────────────────────
 //
 
 fn check_active_monitors() -> Vec<Monitor> {
     //run the command and capture output
-    let xrandr = Command::new("xrandr").output().expect("Could not run command");
+    let xrandr = Command::new("xrandr")
+        .output()
+        .expect("Could not run command");
 
     //Convert to string
     let input_string = String::from_utf8(xrandr.stdout).unwrap();
@@ -34,7 +32,6 @@ fn check_active_monitors() -> Vec<Monitor> {
 
     //Pattern-matching for each line, unwrapping option to get the value.
     while let Some(single_line) = lines.next() {
-
         //Split lines again into "words" which will be used alot
         let mut words = single_line.split_whitespace();
 
@@ -45,7 +42,7 @@ fn check_active_monitors() -> Vec<Monitor> {
         // let mut screen_enabled = false;
 
         //Create default variable for is this primary.
-        let mut primary=false;
+        let mut primary = false;
 
         //Check if the second word says connected
         if words.next() == Some("connected") {
@@ -58,7 +55,9 @@ fn check_active_monitors() -> Vec<Monitor> {
             let mut resolutions_vec: Vec<String> = Vec::new();
 
             //This is the first monitor resolution. Also the highest resolution that monitor supports according to xrandr
-            resolutions_vec.push(String::from(lines.next().unwrap().split_whitespace().next().unwrap()));
+            resolutions_vec.push(String::from(
+                lines.next().unwrap().split_whitespace().next().unwrap(),
+            ));
 
             //Code that might come in handy, but commented out for now
             //if the monitor is connected and contains * it means that is currently displaying on that mode
@@ -70,7 +69,6 @@ fn check_active_monitors() -> Vec<Monitor> {
             //The next few lines are resolutions the monitor supports
             //They are iterated until we get to a resolution that is to low to matter
             while let Some(resolution) = lines.next().unwrap().split_whitespace().next() {
-
                 let left_side = String::from(resolution.split("x").next().unwrap());
 
                 //Check if the horizontal resolution is to low to matter and break out of while if it is
@@ -90,11 +88,9 @@ fn check_active_monitors() -> Vec<Monitor> {
             })
         }
     }
-//
-// ─── XRANDR OUTPUT PARSER END ────────────────────────────────────────────────────
-//
-
-
+    //
+    // ─── XRANDR OUTPUT PARSER END ────────────────────────────────────────────────────
+    //
 
     //Check if you don't have any other monitors connected, enable that one and quit.
     if monitor_vec.len() == 1 {
@@ -107,7 +103,6 @@ fn check_active_monitors() -> Vec<Monitor> {
     }
     return monitor_vec;
 }
-
 
 //Resolution finder, starts checking from the primary displays highest resolution
 //The order highest to lowest, is due to the order of the xrandr output
@@ -143,7 +138,7 @@ pub fn set_mode(message: Message) {
     match message {
         Message::ModePrim => {
             Command::new("xrandr")
-                .args(&[
+                .args([
                     "--output",
                     &(primary_monitor.name),
                     "--auto",
@@ -159,7 +154,7 @@ pub fn set_mode(message: Message) {
 
         Message::ModeSec => {
             Command::new("xrandr")
-                .args(&[
+                .args([
                     "--output",
                     &(primary_monitor.name),
                     "--off",
@@ -180,7 +175,7 @@ pub fn set_mode(message: Message) {
             );
 
             Command::new("xrandr")
-                .args(&[
+                .args([
                     "--output",
                     &(primary_monitor.name),
                     "--mode",
@@ -201,7 +196,7 @@ pub fn set_mode(message: Message) {
         //Set mode to extended, defaults to left because mine is on my left.
         Message::ModeExt => {
             Command::new("xrandr")
-                .args(&[
+                .args([
                     "--output",
                     &(primary_monitor.name),
                     "--auto",
@@ -214,65 +209,39 @@ pub fn set_mode(message: Message) {
                 .output()
                 .expect("Could not run command");
 
-
             std::process::exit(0)
         }
     }
 }
 
-//Packer struct for storing assets in binary
-#[derive(Packer)]
-#[packer(source = "assets")]
-struct Assets;
-
-//Creates a handle struct for loading svg data from binary,
-//Luckily iced implements a way to load svg's from bytes, just needs a little coercion.
-fn svg_create_handle(file_name: &str) -> svg::Handle {
-    let data: Option<&'static [u8]> = Assets::get(file_name);
-    match data{
-        None => {return svg::Handle::from_memory(Vec::new())
-        }
-        Some(data) => {return svg::Handle::from_memory(data);
-        }
-    }
-}
-
-// THIS MAIN IS FOR TESTING
-// fn main() {
-
-//     let a = [0];
-//     let monitor = check_active_monitors();
-//     for i in monitor{
-//         println!("Screen name {:?}, enabled {:?} , primary {:?}, supported resolutions: {:?}",i.name, i.enabled, i.primary,i.resolutions);
-//     };
-// }
+const PRIMARY_ONLY: &[u8] = include_bytes!("./assets_png/primary-only.png");
+const SECONDARY_ONLY: &[u8] = include_bytes!("assets_png/secondary-only.png");
+const DUPLICATE: &[u8] = include_bytes!("assets_png/duplicate.png");
+const EXTENDED: &[u8] = include_bytes!("assets_png/extended.png");
 
 fn main() -> iced::Result {
     // This is run to check if any monitors we only have one monitor connected,
     // if so it will enable the connected monitor and immediately close
     check_active_monitors();
 
-    //setting resizable:false, and max_size seems to force floating on tiling window managers
-    let settings = Settings {
-        window: window::Settings {
+    // setting resizable:false, and max_size seems to force floating on tiling window managers
+    let settings = iced::Settings {
+        window: Settings {
             max_size: Some((400, 450)),
             resizable: false,
-            ..window::Settings::default()
+            ..Settings::default()
         },
         ..Default::default()
     };
     ScreenMode::run(settings)
 }
-
-#[derive(Default)]
 struct ScreenMode {
-    image_1: button::State,
-    image_2: button::State,
-    image_3: button::State,
-    image_4: button::State,
+    primary_only: image::Handle,
+    secondary_only: image::Handle,
+    duplicate: image::Handle,
+    extended: image::Handle,
 }
 
-//message struct for button presses
 #[derive(Debug, Clone, Copy)]
 pub enum Message {
     ModePrim,
@@ -281,66 +250,67 @@ pub enum Message {
     ModeExt,
 }
 
-// iced sandbox
 impl Sandbox for ScreenMode {
     type Message = Message;
 
-    //iced
     fn new() -> Self {
-        Self::default()
+        Self {
+            primary_only: image::Handle::from_memory(PRIMARY_ONLY),
+            secondary_only: image::Handle::from_memory(SECONDARY_ONLY),
+            duplicate: image::Handle::from_memory(DUPLICATE),
+            extended: image::Handle::from_memory(EXTENDED),
+        }
     }
 
-    //Window title
     fn title(&self) -> String {
         String::from("Screen Mode Selector")
     }
 
-
-    //Usually match statement happens here, but for future implementation of
-    //selection with keyboard another match statement is needed,
-    //therefore actual commands are in their own function.
-    fn update(&mut self, message: Message) {
+    fn update(&mut self, message: Self::Message) {
         set_mode(message)
     }
 
-    fn view(&mut self) -> Element<Message> {
-
+    fn view(&self) -> Element<Message> {
         //iced event handling, content is put in a column
         let content = Column::new()
             .padding(20)
-            .align_items(Align::Center)
+            .align_items(Alignment::Center)
             //Pushing buttons into column
             .push(
-                Button::new(
-                    &mut self.image_1,
-                    Svg::new(svg_create_handle("assets/primary-only.svg")),
+                button::Button::new(
+                    image(self.primary_only.clone())
+                        .width(Length::Fill)
+                        .height(Length::Shrink),
                 )
                 .on_press(Message::ModePrim)
-                .style(style::Button::Primary),
+                .style(theme::Button::Custom(Box::new(ButtonColor::Primary))),
             )
             .push(
-                Button::new(
-                    &mut self.image_2,
-                    Svg::new(svg_create_handle("assets/secondary-only.svg")),
+                button::Button::new(
+                    image(self.secondary_only.clone())
+                        .width(Length::Fill)
+                        .height(Length::Shrink),
                 )
                 .on_press(Message::ModeSec)
-                .style(style::Button::Primary),
+                .style(theme::Button::Custom(Box::new(ButtonColor::Primary))),
             )
             .push(
-                Button::new(
-                    &mut self.image_3,
-                    Svg::new(svg_create_handle("assets/duplicate.svg")),
+                button::Button::new(
+                    image(self.duplicate.clone())
+                        .width(Length::Fill)
+                        .height(Length::Shrink),
                 )
                 .on_press(Message::ModeDup)
-                .style(style::Button::Primary),
+                .style(theme::Button::Custom(Box::new(ButtonColor::Primary))),
             )
             .push(
-                Button::new(
-                    &mut self.image_4,
-                    Svg::new(svg_create_handle("assets/extended.svg")),
+                button::Button::new(
+                    image(self.extended.clone())
+                        .width(Length::Fill)
+                        .height(Length::Shrink),
                 )
-                .on_press(Message::ModeExt)
-                .style(style::Button::Primary),
+                .on_press(Message::ModeDup)
+                .style(theme::Button::Custom(Box::new(ButtonColor::Primary))),
             );
 
         //A container is needed to set background color
@@ -349,49 +319,39 @@ impl Sandbox for ScreenMode {
             .height(Length::Fill)
             .center_x()
             .center_y()
-            .style(style::Container::BackgroundColor)
             .into()
+    }
+
+    fn style(&self) -> theme::Application {
+        fn dark_background(_theme: &Theme) -> application::Appearance {
+            application::Appearance {
+                background_color: Color::from_rgb8(33, 38, 46),
+                text_color: Color::WHITE,
+            }
+        }
+
+        theme::Application::from(dark_background as fn(&Theme) -> _)
     }
 }
 
-//Styling of background and buttons
-mod style {
-    use iced::{button, container, Background, Color, Vector};
+#[derive(Debug, Clone, Copy)]
+pub enum ButtonColor {
+    Primary,
+    Selected,
+}
 
-    pub enum Button {
-        Primary,
-        Selected,
-    }
-
-    pub enum Container {
-        BackgroundColor,
-    }
-
-    impl container::StyleSheet for Container {
-        fn style(&self) -> container::Style {
-            container::Style {
-                background: Some(Background::Color(Color::from_rgb(
-                    30.0 / 255.0,
-                    36.0 / 255.0,
-                    41.0 / 255.0,
-                ))),
-                ..container::Style::default()
-            }
+impl button::StyleSheet for ButtonColor {
+    fn active(&self, style: &Self::Style) -> iced::widget::button::Appearance {
+        iced::widget::button::Appearance {
+            background: Some(iced::Background::Color(Color {
+                r: 0.,
+                g: 0.,
+                b: 0.,
+                a: 0.,
+            })),
+            ..button::Appearance::default()
         }
     }
 
-    impl button::StyleSheet for Button {
-        fn active(&self) -> button::Style {
-            button::Style {
-                background: Some(Background::Color(match self {
-                    Button::Primary => Color::from_rgb(30.0 / 255.0, 36.0 / 255.0, 41.0 / 255.0),
-                    Button::Selected => Color::from_rgb(15.0 / 255.0, 87.0 / 255.0, 148.0 / 255.0),
-                })),
-                border_radius: 12.0,
-                shadow_offset: Vector::new(0.0, 0.0),
-                text_color: Color::WHITE,
-                ..button::Style::default()
-            }
-        }
-    }
+    type Style = iced::Theme;
 }
