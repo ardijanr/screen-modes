@@ -76,15 +76,11 @@
 
         devShell = pkgs.mkShell {
 
-          # inputsFrom = builtins.attrValues self.checks;
 
           buildInputs = with pkgs; [ ] ++ runtimeDeps;
 
           nativeBuildInputs = with pkgs; [
             rustToolchain
-            # cargo-tarpaulin
-            # cargo-edit
-            # pkg-config
           ];
 
           LD_LIBRARY_PATH = libPath;
