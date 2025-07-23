@@ -1,6 +1,6 @@
 # Screen Mode Selector
 
-Easy toggle between modes for two monitors.
+Easy toggle between modes for two monitors for xrandr based systems.
 
 Makes changing monitor layout simpler and faster.
 
@@ -15,8 +15,7 @@ Bind it to a key for optimal handyness.
 Source code depends on:
 - [iced](https://github.com/hecrj/iced)
 
-
-Requires xrandr.
+See flake for additional dependecies.
 
 
 Opens a floating window that lets you click on what screen you want active and immediately closes after click/enter,
@@ -41,9 +40,9 @@ built entierly in rust, using the [iced GUI library](https://github.com/hecrj/ic
 - Extend (highest available on both monitors)
 
 Future Features:
-- Screen position left or right (defaults to left right now)
+- Screen position left or right (defaults to left at the moment)
     For now either change the source code argument where it says "--left-off" to "--right-of" in the main.rs file and recompile.
-    or complain about it and it might happen sooner...
+    or complain about it and I might change it...
 
 
 # Installation/How to use
@@ -58,61 +57,9 @@ bindsym --release $mod+F2 exec --no-startup-id ~/.bin/screen_toggle
 ```
 
 
-# Example nixos install:
+# Example nixos home manager install:
 ```
-
-{ config, lib, pkgs, ... }:
-
-let
-  url = "https://github.com/ardijanr/screen-modes/releases/download/latest/screen_mode";
-  sha256 = "1wcngmhif8csv6iv9wh2w3gkrgh4f0gb0vkmkgxhfp89kdhb4jx1";
-
-  runtimeDeps = with pkgs; [
-    xorg.libX11
-    xorg.libXcursor
-    xorg.libXi
-    xorg.libXrandr
-  ];
-
-  screenMode = pkgs.stdenv.mkDerivation {
-    pname = "screen_mode";
-    version = "0.1.0";
-    src = pkgs.fetchurl {
-      url = url;
-      sha256 = sha256;
-    };
-
-    buildInputs = runtimeDeps;
-
-    dontUnpack = true;
-
-    installPhase = ''
-      mkdir -p $out/bin
-      cp $src $out/bin/screen_mode
-      chmod +x $out/bin/screen_mode
-    '';
-
-    makeWrapperArgs = [
-      "--set" "LD_LIBRARY_PATH" "${lib.makeLibraryPath runtimeDeps}"
-    ];
-
-    nativeBuildInputs = [ pkgs.makeWrapper ];
-
-    postFixup = ''
-      wrapProgram $out/bin/screen_mode ''${makeWrapperArgs[@]}
-    '';
-
-    meta = with lib; {
-      description = "Select how external monitors should behave";
-      homepage = "https://github.com/ardijanr/screen-modes";
-      license = licenses.mit;
-      maintainers = with maintainers; [ "ardijanr" ];
-    };
-  };
-in
-{
   home.packages = [
-    screenMode
+    inputs.screen-modes.packages.${pkgs.system}.default
   ];
-}
 ```
