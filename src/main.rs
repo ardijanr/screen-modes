@@ -1,18 +1,73 @@
 use iced::application::{self};
+use iced::futures::io::ReadToString;
 use iced::keyboard::KeyCode;
 use iced::widget::{button, image, pane_grid, Column, Container};
 use iced::window::Settings;
 use iced::{
-    event, executor, keyboard, subscription, theme, Alignment, Application, Color, Element, Event,
-    Length, Subscription, Theme,
+    event, executor, keyboard, subscription, theme, Alignment, Application, BorderRadius, Color,
+    Element, Event, Length, Subscription, Theme,
 };
 use std::process::{exit, Command};
 
 struct Monitor {
     name: String,
     // enabled: bool,
-    resolutions: Vec<String>,
+    resolutions: Vec<Resolution>,
     primary: bool,
+}
+
+impl Monitor {
+    fn get_best_res_and_rate(&self) -> (Resolution, RefreshRate) {
+        let (re_i, ra_i) = if let Some((mut re_i, ra_i)) = self
+            .resolutions
+            .iter()
+            .enumerate()
+            .find_map(|(resolution_i, resolution)| {
+                resolution
+                    .rates
+                    .iter()
+                    .position(|rate| rate.currently_active)
+                    .map(|rate_i| (resolution_i, rate_i))
+            }) {
+            if ra_i + 1 >= self.resolutions[re_i].rates.len() {
+                re_i += 1;
+            }
+
+            (re_i, ra_i + 1)
+        } else {
+            (0, 0)
+        };
+
+        (
+            self.resolutions[re_i].clone(),
+            self.resolutions[re_i].rates[ra_i].clone(),
+        )
+    }
+}
+
+#[derive(Clone)]
+struct Resolution {
+    horizontal: u32,
+    vertical: u32,
+    rates: Vec<RefreshRate>,
+}
+
+#[derive(Clone)]
+struct RefreshRate {
+    str_value: String,
+    numeric_value: f32,
+    currently_active: bool,
+}
+impl PartialEq for Resolution {
+    fn eq(&self, other: &Resolution) -> bool {
+        self.horizontal == other.horizontal && self.vertical == other.vertical
+    }
+}
+
+impl Resolution {
+    pub fn to_string(&self) -> String {
+        format!("{}x{}", self.horizontal, self.vertical)
+    }
 }
 
 //
@@ -56,12 +111,12 @@ fn check_active_monitors() -> Vec<Monitor> {
             }
 
             //Create a vector to store the resolutions that are supported
-            let mut resolutions_vec: Vec<String> = Vec::new();
+            let mut resolutions_vec: Vec<Resolution> = Vec::new();
 
             //This is the first monitor resolution. Also the highest resolution that monitor supports according to xrandr
-            resolutions_vec.push(String::from(
-                lines.next().unwrap().split_whitespace().next().unwrap(),
-            ));
+            // resolutions_vec.push(String::from(
+            //     dbg!(lines.next()).unwrap().split_whitespace().next().unwrap(),
+            // ));
 
             //Code that might come in handy, but commented out for now
             //if the monitor is connected and contains * it means that is currently displaying on that mode
@@ -72,16 +127,61 @@ fn check_active_monitors() -> Vec<Monitor> {
 
             //The next few lines are resolutions the monitor supports
             //They are iterated until we get to a resolution that is to low to matter
-            while let Some(resolution) = lines.next().unwrap().split_whitespace().next() {
-                let left_side = String::from(resolution.split("x").next().unwrap());
+            while let Some(mut resolution_line) = lines
+                .next()
+                .and_then(|rl| Some(rl.trim().split_whitespace()))
+            {
+                // if resolution_line.is_empty() {
+                //     break;
+                // }
+                //
+                let mut resolution = resolution_line.next().unwrap().split('x');
+                let mut refresh_rates: Vec<RefreshRate> = Vec::new();
 
-                //Check if the horizontal resolution is to low to matter and break out of while if it is
-                if left_side.parse::<i32>().unwrap() < 1000 {
-                    break;
+                for mut rate_str in resolution_line.map(|x| x.to_string()) {
+                    let current_rate = rate_str.contains('*');
+
+                    rate_str = rate_str.replace('*', "").replace('+', "");
+                    if rate_str.is_empty() {
+                        continue;
+                    }
+
+                    refresh_rates.push(RefreshRate {
+                        numeric_value: rate_str.parse::<f32>().unwrap(),
+                        str_value: rate_str,
+                        currently_active: current_rate,
+                    });
                 }
 
-                //Otherwise save the resolution
-                resolutions_vec.push(String::from(resolution))
+                if let (Some(h), Some(v)) = (
+                    resolution.next().and_then(|x| x.parse::<u32>().ok()),
+                    resolution.next().and_then(|x| x.parse::<u32>().ok()),
+                ) {
+                    if h < 1000 {
+                        break;
+                    };
+
+                    resolutions_vec.push(Resolution {
+                        horizontal: h,
+                        vertical: v,
+                        rates: refresh_rates,
+                    });
+                }
+                // let rates = resolution_line
+
+                // let rates = res
+                //.split_whitespace().next() {
+                // dbg!(&resolution);
+
+                // let left_side = String::from(resolution.split("x").next().unwrap());
+
+                // //Check if the horizontal resolution is to low to matter and break out of while if it is
+                // if left_side.parse::<u32>().unwrap() < 1000 {
+                //     break;
+                // }
+
+                // //Otherwise save the resolution
+                // resolutions_vec.push(String::from(resolution))
             }
 
             //Add the monitor that we found to a vector which is returned when while loop finishes.
@@ -112,7 +212,7 @@ fn check_active_monitors() -> Vec<Monitor> {
 //The order highest to lowest, is due to the order of the xrandr output
 //
 //Takes the primary display in the first input, input order matters.
-fn find_common_res(primary: Vec<String>, secondary: Vec<String>) -> (usize, usize) {
+fn find_common_res(primary: Vec<Resolution>, secondary: Vec<Resolution>) -> (usize, usize) {
     for i in 0..primary.len() {
         for j in 0..secondary.len() {
             if primary[i] == secondary[j] {
@@ -125,7 +225,7 @@ fn find_common_res(primary: Vec<String>, secondary: Vec<String>) -> (usize, usiz
 
 //Currently only works with one external monitor, and one primary monitor
 pub fn set_mode(message: Message) {
-    let mut active_monitors = check_active_monitors();
+    let mut active_monitors: Vec<Monitor> = check_active_monitors();
     let mut primary_index = 0;
 
     //Find the index of the primary display
@@ -157,15 +257,23 @@ pub fn set_mode(message: Message) {
         }
 
         Message::SecondaryOnly => {
+            let monitor = &active_monitors[0];
+            let (res, rate) = monitor.get_best_res_and_rate();
+            let args = [
+                "--output",
+                &(primary_monitor.name),
+                "--off",
+                "--output",
+                &(monitor.name),
+                "--mode",
+                &(res.to_string()),
+                "--rate",
+                &(rate.str_value),
+            ];
+
+            dbg!(&args);
             Command::new("xrandr")
-                .args([
-                    "--output",
-                    &(primary_monitor.name),
-                    "--off",
-                    "--output",
-                    &(active_monitors[0].name),
-                    "--auto",
-                ])
+                .args(args)
                 .output()
                 .expect("Could not run command");
 
@@ -183,11 +291,11 @@ pub fn set_mode(message: Message) {
                     "--output",
                     &(primary_monitor.name),
                     "--mode",
-                    &(primary_monitor.resolutions[common_res.0]),
+                    &(primary_monitor.resolutions[common_res.0]).to_string(),
                     "--output",
                     &(active_monitors[0].name),
                     "--mode",
-                    &(active_monitors[0].resolutions[common_res.1]),
+                    &(active_monitors[0].resolutions[common_res.1]).to_string(),
                     "--same-as",
                     &(primary_monitor.name),
                 ])
