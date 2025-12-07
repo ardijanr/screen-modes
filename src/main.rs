@@ -1,12 +1,12 @@
 use iced::application::{self};
-use iced::futures::io::ReadToString;
 use iced::keyboard::KeyCode;
 use iced::widget::{button, image, pane_grid, Column, Container};
 use iced::window::Settings;
 use iced::{
-    event, executor, keyboard, subscription, theme, Alignment, Application, BorderRadius, Color,
-    Element, Event, Length, Subscription, Theme,
+    event, executor, keyboard, subscription, theme, Alignment, Application, Color, Element, Event,
+    Length, Subscription, Theme,
 };
+use std::fmt;
 use std::process::{exit, Command};
 
 struct Monitor {
@@ -52,21 +52,20 @@ struct Resolution {
     rates: Vec<RefreshRate>,
 }
 
+impl fmt::Display for Resolution {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}x{}", self.horizontal, self.vertical)
+    }
+}
+
 #[derive(Clone)]
 struct RefreshRate {
     str_value: String,
-    numeric_value: f32,
     currently_active: bool,
 }
 impl PartialEq for Resolution {
     fn eq(&self, other: &Resolution) -> bool {
         self.horizontal == other.horizontal && self.vertical == other.vertical
-    }
-}
-
-impl Resolution {
-    pub fn to_string(&self) -> String {
-        format!("{}x{}", self.horizontal, self.vertical)
     }
 }
 
@@ -113,41 +112,21 @@ fn check_active_monitors() -> Vec<Monitor> {
             //Create a vector to store the resolutions that are supported
             let mut resolutions_vec: Vec<Resolution> = Vec::new();
 
-            //This is the first monitor resolution. Also the highest resolution that monitor supports according to xrandr
-            // resolutions_vec.push(String::from(
-            //     dbg!(lines.next()).unwrap().split_whitespace().next().unwrap(),
-            // ));
-
-            //Code that might come in handy, but commented out for now
-            //if the monitor is connected and contains * it means that is currently displaying on that mode
-            //checks the entire line
-            // if first_res_line.next().unwrap().contains(&"*"){
-            //     screen_enabled = true;
-            // };
-
             //The next few lines are resolutions the monitor supports
             //They are iterated until we get to a resolution that is to low to matter
-            while let Some(mut resolution_line) = lines
-                .next()
-                .and_then(|rl| Some(rl.trim().split_whitespace()))
-            {
-                // if resolution_line.is_empty() {
-                //     break;
-                // }
-                //
+            while let Some(mut resolution_line) = lines.next().map(|rl| rl.split_whitespace()) {
                 let mut resolution = resolution_line.next().unwrap().split('x');
                 let mut refresh_rates: Vec<RefreshRate> = Vec::new();
 
                 for mut rate_str in resolution_line.map(|x| x.to_string()) {
                     let current_rate = rate_str.contains('*');
 
-                    rate_str = rate_str.replace('*', "").replace('+', "");
+                    rate_str = rate_str.replace(['*', '+'], "");
                     if rate_str.is_empty() {
                         continue;
                     }
 
                     refresh_rates.push(RefreshRate {
-                        numeric_value: rate_str.parse::<f32>().unwrap(),
                         str_value: rate_str,
                         currently_active: current_rate,
                     });
@@ -167,21 +146,6 @@ fn check_active_monitors() -> Vec<Monitor> {
                         rates: refresh_rates,
                     });
                 }
-                // let rates = resolution_line
-
-                // let rates = res
-                //.split_whitespace().next() {
-                // dbg!(&resolution);
-
-                // let left_side = String::from(resolution.split("x").next().unwrap());
-
-                // //Check if the horizontal resolution is to low to matter and break out of while if it is
-                // if left_side.parse::<u32>().unwrap() < 1000 {
-                //     break;
-                // }
-
-                // //Otherwise save the resolution
-                // resolutions_vec.push(String::from(resolution))
             }
 
             //Add the monitor that we found to a vector which is returned when while loop finishes.
@@ -213,9 +177,9 @@ fn check_active_monitors() -> Vec<Monitor> {
 //
 //Takes the primary display in the first input, input order matters.
 fn find_common_res(primary: Vec<Resolution>, secondary: Vec<Resolution>) -> (usize, usize) {
-    for i in 0..primary.len() {
-        for j in 0..secondary.len() {
-            if primary[i] == secondary[j] {
+    for (i, p) in primary.iter().enumerate() {
+        for (j, s) in secondary.iter().enumerate() {
+            if p == s {
                 return (i, j);
             }
         }
@@ -226,15 +190,9 @@ fn find_common_res(primary: Vec<Resolution>, secondary: Vec<Resolution>) -> (usi
 //Currently only works with one external monitor, and one primary monitor
 pub fn set_mode(message: Message) {
     let mut active_monitors: Vec<Monitor> = check_active_monitors();
-    let mut primary_index = 0;
 
     //Find the index of the primary display
-    for i in 0..active_monitors.len() {
-        if active_monitors[i].primary {
-            primary_index = i
-        };
-    }
-
+    let primary_index = active_monitors.iter().position(|x| x.primary).unwrap_or(0);
     //primary monitor is not the currently active one, its what is set as primary in xrandr
     let primary_monitor = active_monitors.remove(primary_index);
 
